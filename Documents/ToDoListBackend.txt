@@ -3,18 +3,18 @@
 ### **المرحلة 1: الإعدادات الأساسية والتجهيزات (الأسبوع 1)**
 
 #### **المهمة 1.1: إعداد بيئة التطوير**
-- [ ] إنشاء مشروع Django جديد
-- [ ] تثبيت وتكوين Django REST Framework
-- [ ] إعداد هيكل المشروع (Project Structure)
-- [ ] تكوين إعدادات البيئة (Development/Production)
-- [ ] إعداد Git Repository وإعداد Branching Strategy
+- [ok] إنشاء مشروع Django جديد
+- [ok] تثبيت وتكوين Django REST Framework
+- [ok] إعداد هيكل المشروع (Project Structure)
+- [ok] تكوين إعدادات البيئة (Development/Production)
+- [ok] إعداد Git Repository وإعداد Branching Strategy
 
 #### **المهمة 1.2: تكوين قاعدة البيانات والنماذج الأساسية**
-- [ ] تكوين PostgreSQL قاعدة البيانات
-- [ ] إنشاء النماذج الأساسية (Doctor, Patient)
-- [ ] إعداد نظام الهجرة (Migrations)
-- [ ] تكوين Admin Interface
-- [ ] إنشاء بيانات تجريبية (Fixtures)
+- [ok] تكوين PostgreSQL قاعدة البيانات
+- [ok] إنشاء النماذج الأساسية (Doctor, Patient)
+- [ok] إعداد نظام الهجرة (Migrations)
+- [ok] تكوين Admin Interface
+- [ok] إنشاء بيانات تجريبية (Fixtures)
 
 #### **المهمة 1.3: إعداد الأمان الأساسي**
 - [ ] تكوين إعدادات الأمان (CORS, Allowed Hosts)

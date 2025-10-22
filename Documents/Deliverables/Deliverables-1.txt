@@ -1,0 +1,35 @@
+#### **المهمة 1.1: إعداد بيئة التطوير**
+- [ok] إنشاء مشروع Django جديد
+- [ok] تثبيت وتكوين Django REST Framework
+- [ok] إعداد هيكل المشروع (Project Structure)
+- [ok] تكوين إعدادات البيئة (Development/Production)
+- [ok] إعداد Git Repository وإعداد Branching Strategy
+
+#### **التسليم 1.1: إعداد بيئة التطوير**
+---
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+October 21, 2025 - 21:52:54
+Django version 4.2.7, using settings 'medical_ai_platform.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
+---
+
+#### **المهمة 1.2: تكوين قاعدة البيانات والنماذج الأساسية**
+- [ok] تكوين PostgreSQL قاعدة البيانات
+- [ok] إنشاء النماذج الأساسية (Doctor, Patient)
+- [ok] إعداد نظام الهجرة (Migrations)
+- [ok] تكوين Admin Interface
+- [ok] إنشاء بيانات تجريبية (Fixtures)
+#### **التسليمات 1.2: تكوين قاعدة البيانات والنماذج الأساسية**
+---
+تم أنشاء قاعدتي بيانات و تم وضع شرح عنهن في مجلد  هذا :
+DoctorAI\Documents\Explanations\models.txt
+تم وضع قسم للأدمن للتحكم بإدارة المرضى و الأطباء بحيث يكون عن 
+طريقهم تأكيد الطبيب و حذف أي طبيب مزعج 
+قم تم وضع حساب الطبيب المشرف وهذه معلوماته 
+email : admin@applay.com
+password : admin123@
+---

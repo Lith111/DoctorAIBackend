@@ -9,7 +9,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-development-key')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+# إعدادات المستخدم المخصص
+AUTH_USER_MODEL = 'accounts.Doctor'
 
+# إعدادات التطبيقات المخصصة
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -24,11 +27,11 @@ INSTALLED_APPS = [
     'django_filters',
     
     # Local apps
-    'accounts',
-    'patients',
-    'medical',
-    'ai_services',
-    'storage',
+    'accounts.apps.AccountsConfig',  # استخدام التكوين المخصص
+    'patients.apps.PatientsConfig',
+    'medical.apps.MedicalConfig',
+    'ai_services.apps.AiServicesConfig',
+    'storage.apps.StorageConfig',
 ]
 
 MIDDLEWARE = [

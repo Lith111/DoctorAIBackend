@@ -1,0 +1,204 @@
+########################Doctor########################################
+```python
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class Doctor(AbstractUser):
+```
+- يستخدم `AbstractUser` لإنشاء نموذج مستخدم مخصص بدلاً من المستخدم الافتراضي
+- يرث جميع خصائص ونظام المصادقة من Django
+
+## الحقول المخصصة للأطباء
+
+### اختصاصات الطبيب
+```python
+SPECIALIZATION_CHOICES = [
+    ('oncology', 'أورام'),
+    ('hematology', 'أمراض الدم'),
+    ('radiology', 'أشعة'),
+    ('surgery', 'جراحة الأورام'),
+]
+specialization = models.CharField(max_length=50, choices=SPECIALIZATION_CHOICES)
+```
+- يحدد اختصاص الطبيب من خلال قائمة خيارات محددة
+- الخيارات تشمل: الأورام، أمراض الدم، الأشعة، جراحة الأورام
+
+### معلومات المهنة
+```python
+license_number = models.CharField(max_length=50, unique=True)
+hospital = models.CharField(max_length=255)
+phone = models.CharField(max_length=20)
+is_verified = models.BooleanField(default=False)
+```
+- `license_number`: رقم الترخيص الطبي (فريد)
+- `hospital`: المستشفى أو المؤسسة الطبية
+- `phone`: رقم الهاتف
+- `is_verified`: حالة التحقق (افتراضيًا غير موثق)
+
+### حقول الوقت
+```python
+created_at = models.DateTimeField(auto_now_add=True)
+updated_at = models.DateTimeField(auto_now=True)
+```
+- `created_at`: وقت الإنشاء (يضاف تلقائيًا)
+- `updated_at`: وقت التحديث (يحدث تلقائيًا عند كل تعديل)
+
+## إعدادات المصادقة المخصصة
+
+### استخدام البريد الإلكتروني بدلاً من اسم المستخدم
+```python
+username = None
+email = models.EmailField(unique=True)
+    
+USERNAME_FIELD = 'email'
+REQUIRED_FIELDS = ['first_name', 'last_name', 'specialization']
+```
+- `username = None`: إزالة حقل اسم المستخدم الافتراضي
+- `email = models.EmailField(unique=True)`: جعل البريد الإلكتروني فريدًا
+- `USERNAME_FIELD = 'email'`: استخدام البريد الإلكتروني كمعرف للمستخدم
+- `REQUIRED_FIELDS`: الحقول المطلوبة عند إنشاء مستخدم عبر الأمر `createsuperuser`
+
+## إعدادات إضافية
+
+### إعدادات الجدول والعرض
+```python
+class Meta:
+    db_table = 'doctors'
+    verbose_name = 'طبيب'
+    verbose_name_plural = 'أطباء'
+```
+- `db_table`: اسم الجدول في قاعدة البيانات
+- `verbose_name`: الاسم المفرد في لوحة الإدارة
+- `verbose_name_plural`: الاسم الجمع في لوحة الإدارة
+
+### طريقة العرض
+```python
+def __str__(self):
+    return f"Dr. {self.first_name} {self.last_name} - {self.specialization}"
+```
+- يعرض اسم الطبيب واختصاصه عند عرض الكائن في لوحة الإدارة
+
+## الاستخدام
+هذا النموذج يمثل نظام مستخدمين مخصص للأطباء في نظام طبي، مع إمكانية:
+- المصادقة باستخدام البريد الإلكتروني
+- تخزين معلومات مهنية خاصة بالأطباء
+- تصنيف الأطباء حسب الاختصاص
+- تتبع حالة التحقق من التراخيص
+########################Patients########################################
+الأساسيات
+python
+from django.db import models
+from accounts.models import Doctor
+
+class Patient(models.Model):
+ينشئ نموذج Patient يرتبط بنموذج Doctor الذي سبق تعريفه
+
+الحقول الأساسية
+معلومات شخصية
+python
+GENDER_CHOICES = [
+    ('M', 'ذكر'),
+    ('F', 'أنثى'),
+]
+
+national_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
+first_name = models.CharField(max_length=100)
+last_name = models.CharField(max_length=100)
+date_of_birth = models.DateField(default=None, null=True, blank=True)
+gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+phone = models.CharField(max_length=20)
+national_id: الرقم القومي/الهوية (فريد، ويمكن أن يكون فارغًا)
+
+first_name, last_name: الاسم الأول والأخير
+
+date_of_birth: تاريخ الميلاد (يمكن أن يكون فارغًا)
+
+gender: الجنس (ذكر/أنثى)
+
+phone: رقم الهاتف
+
+العلاقات ومعلومات إضافية
+python
+doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='patients')
+emergency_contact = models.JSONField(default=dict)
+address = models.TextField(blank=True, null=True)
+notes = models.TextField(blank=True, null=True)
+doctor: العلاقة مع الطبيب المعالج (عند حذف الطبيب، يحذف جميع مرضاه)
+
+emergency_contact: جهة اتصال الطوارئ بتنسيق JSON
+
+address: العنوان
+
+notes: ملاحظات إضافية
+
+حقول الوقت
+python
+created_at = models.DateTimeField(auto_now_add=True)
+updated_at = models.DateTimeField(auto_now=True)
+تتبع وقت الإنشاء والتحديث
+
+إعدادات متقدمة
+القيود والفهارس
+python
+class Meta:
+    db_table = 'patients'
+    verbose_name = 'مريض'
+    verbose_name_plural = 'مرضى'
+    constraints = [
+        models.UniqueConstraint(
+            fields=['doctor', 'national_id'],
+            name='unique_patient_per_doctor'
+        )
+    ]
+    indexes = [
+        models.Index(fields=['doctor', 'created_at']),
+        models.Index(fields=['last_name', 'first_name']),
+    ]
+القيود (Constraints):
+
+يضمن أن الرقم القومي فريد لكل طبيب (يمكن لطبيبين مختلفين لديهم مريض بنفس الرقم القومي)
+
+الفهارس (Indexes):
+
+['doctor', 'created_at']: لتحسين استعلامات عرض مرضى طبيب معين مرتبة بالتاريخ
+
+['last_name', 'first_name']: لتحسين البحث بالاسم
+
+الخصائص والوظائف
+طريقة العرض
+python
+def __str__(self):
+    return f"{self.first_name} {self.last_name} - {self.doctor}"
+خاصية حساب العمر
+python
+@property
+def age(self):
+    from datetime import date
+    today = date.today()
+    return today.year - self.date_of_birth.year - (
+        (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
+    )
+تحسب العمر بدقة بناءً على تاريخ الميلاد
+
+تستخدم @property لجعلها قابلة للاستخدام كخاصية وليس كدالة
+
+تأخذ في الاعتبار ما إذا كان عيد الميلاد قد حان هذا العام أم لا
+
+مثال على الاستخدام
+جهة اتصال الطوارئ (JSON)
+python
+patient.emergency_contact = {
+    'name': 'أحمد محمد',
+    'phone': '+20123456789',
+    'relation': 'أخ'
+}
+الاستعلامات
+python
+# الحصول على جميع مرضى طبيب معين
+doctor.patients.all()
+
+# البحث بالاسم
+Patient.objects.filter(last_name='محمد', first_name='أحمد')
+
+# المرضى مرتبين حسب تاريخ الإضافة
+Patient.objects.filter(doctor=some_doctor).order_by('created_at')
