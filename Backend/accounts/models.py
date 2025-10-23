@@ -51,6 +51,15 @@ class Doctor(AbstractUser):
         db_table = 'doctors'
         verbose_name = 'طبيب'
         verbose_name_plural = 'أطباء'
+    def get_contact_info(self):
+        """الحصول على معلومات التواصل مع الطبيب"""
+        return {
+            'name': f"د. {self.first_name} {self.last_name}",
+            'phone': self.phone,
+            'email': self.email,
+            'specialization': self.get_specialization_display(),
+            'hospital': self.hospital
+        }
     
     def __str__(self):
-        return f"Dr. {self.first_name} {self.last_name} - {self.specialization}"
+        return f"د. {self.first_name} {self.last_name} - {self.specialization}"
