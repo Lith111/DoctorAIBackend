@@ -105,17 +105,87 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # REST Framework settings
+# إعدادات الأمان الجديدة
+SECURITY_CONFIG = {
+    'RATE_LIMITS': {
+        'register': '3/hour',
+        'login': '5/minute', 
+        'patient_create': '10/minute',
+        'api': '1000/hour',
+    },
+    'SECURITY_HEADERS': True,
+    'AUDIT_LOGGING': True,
+    'EMAIL_VERIFICATION': True,
+}
+
+# إعدادات REST Framework المبسطة
 REST_FRAMEWORK = {
-  'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/hour',
-    }
+    'DEFAULT_THROTTLE_CLASSES': [
+        'security.rate_limiting.ConcreteRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': SECURITY_CONFIG['RATE_LIMITS'],
+}
+
+# إعدادات البريد الإلكتروني
+EMAIL_CONFIG = {
+    'BACKEND': 'django.core.mail.backends.console.EmailBackend',  # للتطوير
+    'HOST': 'localhost',
+    'PORT': 1025,
+    'USE_TLS': False,
+}
+
+# تطبيق إعدادات البريد
+EMAIL_BACKEND = EMAIL_CONFIG['BACKEND']
+EMAIL_HOST = EMAIL_CONFIG['HOST']
+EMAIL_PORT = EMAIL_CONFIG['PORT']
+EMAIL_USE_TLS = EMAIL_CONFIG['USE_TLS']
+DEFAULT_FROM_EMAIL = 'noreply@doctorai.com'
+
+# إعدادات Middleware
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'security.headers.SecurityHeadersMiddleware',  # Middleware الجديد
+]
+
+# إعدادات Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'security_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'security.log',
+        },
+        'email_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'email.log',
+        },
+    },
+    'loggers': {
+        'security': {
+            'handlers': ['security_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'email': {
+            'handlers': ['email_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
 }

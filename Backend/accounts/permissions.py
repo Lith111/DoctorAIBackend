@@ -23,10 +23,26 @@ class IsPatientDoctor(permissions.BasePermission):
     صلاحية للتحقق من أن المريض يتبع للطبيب
     """
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated
+        # إذا كان الـ view يتعامل مع patient محدد
+        if hasattr(view, 'get_patient_id'):
+            patient_id = view.get_patient_id()
+            if patient_id:
+                from patients.models import Patient
+                try:
+                    patient = Patient.objects.get(id=patient_id)
+                    return patient.doctor == request.user
+                except Patient.DoesNotExist:
+                    return False
+        return True
     
     def has_object_permission(self, request, view, obj):
-        return obj.doctor == request.user
+        # إذا كان الـ object هو Patient
+        if hasattr(obj, 'doctor'):
+            return obj.doctor == request.user
+        # إذا كان الـ object متعلق بـ Patient (مثل MedicalRecord)
+        elif hasattr(obj, 'patient'):
+            return obj.patient.doctor == request.user
+        return False
 
 class CanAccessPatientData(permissions.BasePermission):
     """

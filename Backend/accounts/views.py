@@ -1,7 +1,7 @@
 from httpx import request
 from rest_framework import status, generics
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated , AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
@@ -13,66 +13,103 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import logout
 import logging
+from security.rate_limiting import RegisterThrottle, LoginThrottle
+from security.audit import SecurityAudit
+from security.email_verification import EmailService
+from security.rate_limiting import RegisterThrottle, LoginThrottle
+from security.audit import SecurityAudit
+from security.email_verification import EmailService
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([RegisterThrottle])
 def doctor_register(request):
+    """تسجيل طبيب جديد مع Rate Limiting"""
     try:
         serializer = DoctorRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             doctor = serializer.save()
+            
+            # إرسال بريد التحقق
+            EmailService.send_verification_email(doctor)
+            
+            # تسجيل الحدث الأمني
+            SecurityAudit.log_event(
+                'USER_REGISTERED',
+                user=doctor,
+                request=request,
+                details={'specialization': doctor.specialization}
+            )
+            
             refresh = RefreshToken.for_user(doctor)
             return Response({
-                'message': 'Doctor registered successfully please call this number to verify +963965329661',
-                    'doctor': {
-                        'id': doctor.id,
-                        'email': doctor.email,
-                        'first_name': doctor.first_name,
-                        'last_name': doctor.last_name,
-                        'specialization': doctor.specialization,
-                    },
-                    'tokens': {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-                }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                'message': 'تم تسجيل الطبيب بنجاح - تم إرسال بريد التحقق',
+                'doctor': DoctorProfileSerializer(doctor).data,
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response({
+            'message': 'بيانات التسجيل غير صالحة',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        SecurityAudit.log_event(
+            'REGISTRATION_ERROR',
+            request=request,
+            details={'error': str(e)}
+        )
+        return Response({
+            'message': 'حدث خطأ أثناء التسجيل',
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([LoginThrottle])
 def doctor_login(request):
+    """تسجيل الدخول مع Rate Limiting"""
     try:
         serializer = DoctorLoginSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
+            
             doctor = authenticate(request, email=email, password=password)
-            if doctor is not None:
+            
+            if doctor is not None and doctor.is_active:
+                # تسجيل الدخول الناجح
+                SecurityAudit.log_login_success(doctor, request)
+                
                 refresh = RefreshToken.for_user(doctor)
                 return Response({
-                    'message': 'Doctor logged in successfully',
-                    'doctor': {
-                        'id': doctor.id,
-                        'email': doctor.email,
-                        'first_name': doctor.first_name,
-                        'last_name': doctor.last_name,
-                        'specialization': doctor.specialization,
-                    },
+                    'message': 'تم تسجيل الدخول بنجاح',
+                    'doctor': DoctorProfileSerializer(doctor).data,
                     'tokens': {
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
                     }
-                }, status=status.HTTP_200_OK)
-            return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                })
+            else:
+                # تسجيل محاولة الدخول الفاشلة
+                SecurityAudit.log_login_failed(email, request)
+                return Response({
+                    'message': 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({
+            'message': 'بيانات الدخول غير صالحة',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-class DoctorProfileView(generics.RetrieveUpdateAPIView):
-    from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.utils import timezone
+        return Response({
+            'message': 'حدث خطأ أثناء تسجيل الدخول',
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class DoctorProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = DoctorProfileSerializer

@@ -17,32 +17,32 @@
 - [ok] إنشاء بيانات تجريبية (Fixtures)
 
 #### **المهمة 1.3: إعداد الأمان الأساسي**
-- [ ] تكوين إعدادات الأمان (CORS, Allowed Hosts)
-- [ ] إعداد نظام المصادقة باستخدام JWT
-- [ ] تكوين Middleware للأمان
-- [ ] إعداد logging system
+- [ok] تكوين إعدادات الأمان (CORS, Allowed Hosts)
+- [ok] إعداد نظام المصادقة باستخدام JWT
+- [ok] تكوين Middleware للأمان
+- [ok] إعداد logging system
 
 ---
 
 ### **المرحلة 2: نظام المصادقة والمستخدمين (الأسبوع 2)**
 
 #### **المهمة 2.1: واجهات API للمصادقة**
-- [ ] إنشاء API لتسجيل المستخدمين (Doctors)
-- [ ] إنشاء API لتسجيل الدخول
-- [ ] إنشاء API لتحديث Token
-- [ ] إنشاء API لاستعادة كلمة المرور
+- [ok] إنشاء API لتسجيل المستخدمين (Doctors)
+- [ok] إنشاء API لتسجيل الدخول
+- [ok] إنشاء API لتحديث Token
+- [wait] إنشاء API لاستعادة كلمة المرور
 
 #### **المهمة 2.2: إدارة الصلاحيات**
-- [ ] تكوين نظام الصلاحيات (Permissions)
-- [ ] إنشاء Custom Permissions للأطباء
-- [ ] إعداد Authentication Backends
-- [ ] تكوين Permission Classes للـ API
+- [ok] تكوين نظام الصلاحيات (Permissions)
+- [ok] إنشاء Custom Permissions للأطباء
+- [ok] إعداد Authentication Backends
+- [ok] تكوين Permission Classes للـ API
 
 #### **المهمة 2.3: تحسينات الأمان**
-- [ ] إعداد Rate Limiting للـ API
-- [ ] تكوين Helmet Security Headers
-- [ ] إعداد التحقق من البريد الإلكتروني
-- [ ] إنشاء نظام المراقبة (Audit Log)
+- [ok] إعداد Rate Limiting للـ API
+- [ok] تكوين Helmet Security Headers
+- [ok] إعداد التحقق من البريد الإلكتروني
+- [ok] إنشاء نظام المراقبة (Audit Log)
 
 ---
 
